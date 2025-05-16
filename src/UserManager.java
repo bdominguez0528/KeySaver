@@ -27,7 +27,7 @@ public class UserManager {
          int userChoice;
 
         do{
-            System.out.println("SSelect one of the following options:");
+            System.out.println("Select one of the following options:");
             System.out.println("1. Add User");
             System.out.println("2. List Users");
             System.out.println("3. Exit");
@@ -47,7 +47,6 @@ public class UserManager {
                     System.out.println("Invalid option! Please choose from options 1-3.");
             }
         }while(userChoice != 3);
-        scnr.close();
     }
 
     public static void addUser(Scanner scnr, ArrayList<User> users){

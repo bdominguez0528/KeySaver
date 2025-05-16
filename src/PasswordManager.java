@@ -53,9 +53,6 @@ public class PasswordManager {
         }catch (Exception e){
             System.out.println("An error occurred: " + e.getMessage());
         }
-        finally {
-            scnr.close();
-        }
     }
 
 
@@ -195,5 +192,7 @@ public class PasswordManager {
             }
         }
     }
+    public static void main(String[] args) {
+        PasswordManager.displayMenu();
+    }
 }
-
