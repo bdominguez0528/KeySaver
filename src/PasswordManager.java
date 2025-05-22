@@ -1,7 +1,9 @@
+// Manages password-related operations, user settings, and menu display for the password manager.
+
+
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Random;
 import java.io.PrintWriter;
 
 public class PasswordManager {
@@ -12,6 +14,7 @@ public class PasswordManager {
 
     private static String currentUserIntials;
 
+    // Displays the password manager menu and handles user choices.
     public static void displayMenu(String initials) {
         Scanner scnr = new Scanner(System.in);
         currentUserIntials = initials;
@@ -24,8 +27,9 @@ public class PasswordManager {
             System.out.println("1. Create Password");
             System.out.println("2. Generate Password");
             System.out.println("3. List Passwords");
-            System.out.println("4. Settings");
-            System.out.println("5. Exit Password Manager");
+            System.out.println("4. Modify Existing Passwords");
+            System.out.println("5. Settings");
+            System.out.println("6. Return to Main Menu");
 
             if(!scnr.hasNextInt()){
                 System.out.println("Invalid input! Please enter a number.");
@@ -38,25 +42,26 @@ public class PasswordManager {
 
             switch (choice) {
                 case 1:
-                    createPassword(scnr);
+                    PasswordEntry.createPassword(scnr, currentUserIntials, requireUppercase, requireLowercase, requireNumbers, requireSymbols);
                     break;
                 case 2:
-                    generatePassword(scnr);
+                    PasswordEntry.generatePassword(scnr, currentUserIntials, requireUppercase, requireLowercase, requireNumbers, requireSymbols);
                     break;
-                
                 case 3:
                     PasswordTableFormatter.printPasswordTable(currentUserIntials);
                     break;
                 case 4:
-                    settings(scnr);
+                    PasswordEntry.modifyPassword(scnr, currentUserIntials, requireUppercase, requireLowercase, requireNumbers, requireSymbols);
                     break;
                 case 5:
-                    System.out.println("Exiting...");
-                    return; // Exit the loop and end the program
+                    settings(scnr);
+                    break;
+                case 6:
+                    System.out.println("Returning...");
+                    return;
                 default:
                     System.out.println("Invalid option! PLease pick from options 1-4.");
-                    break; // Returns user to menu.
-
+                    break;
                 }
             }
         }catch (Exception e){
@@ -64,39 +69,7 @@ public class PasswordManager {
         }
     }
 
-
-    public static void createPassword(Scanner scnr){
-        System.out.println("\nEnter a website");
-        String website = scnr.nextLine();
-        System.out.println("\nEnter a username");
-        String username = scnr.nextLine();
-        System.out.println("\nEnter a password");
-        String password = scnr.nextLine();
-
-        if(validatePassword(password)){
-            saveToFile(website, username, password);
-            System.out.println("Password was saved successfully.\n");
-            }
-            
-        else{
-            System.out.println("Password does not meet the requirements. Check settings for requirements.\n");
-        }
-    }
-
-    public static void generatePassword(Scanner scnr){
-        System.out.println("\nEnter a website");
-        String website = scnr.nextLine();
-        System.out.println("\nEnter a username");
-        String username = scnr.nextLine();
-
-        String password = generateRandomPassword();
-        saveToFile(website, username, password);
-        System.out.println("Generated password: " + password);
-        System.out.println("Password was saved successfully.\n");
-
-    }
-
-
+    // Displays and allows toggling of password requirement settings for the user.
     public static void settings(Scanner scnr) {
         while (true) {
             System.out.println("\nPassword Requirements");
@@ -109,12 +82,12 @@ public class PasswordManager {
     
             if (!scnr.hasNextInt()) {
                 System.out.println("Invalid input! Please enter a number.");
-                scnr.nextLine(); // Consume invalid input
+                scnr.nextLine();
                 continue;
             }
     
             int choice = scnr.nextInt();
-            scnr.nextLine(); // Consume the newline character
+            scnr.nextLine();
     
             switch (choice) {
                 case 1:
@@ -135,7 +108,7 @@ public class PasswordManager {
                     break;
                 case 5:
                     System.out.println("Returning to menu...");
-                    return; // Exit the loop and return to the main menu
+                    return;
                 default:
                     System.out.println("Invalid option! Please pick from options 1-5.");
                     break;
@@ -143,8 +116,9 @@ public class PasswordManager {
         }
     }
 
+    // Saves the current user's password requirement settings to a file.
     private static void saveSettings() {
-        String settingsFile = "settings_" + currentUserIntials + ".txt";
+        String settingsFile = "settings/" + currentUserIntials + ".txt";
         try (PrintWriter writer = new PrintWriter(new FileOutputStream(settingsFile))) {
             writer.println(requireUppercase);
             writer.println(requireLowercase);
@@ -155,11 +129,11 @@ public class PasswordManager {
         }
     }
 
+    // Loads the current user's password requirement settings from a file.
     private static void loadSettings() {
-        String settingsFile = "settings_" + currentUserIntials + ".txt";
+        String settingsFile = "settings/" + currentUserIntials + ".txt";
         File file = new File(settingsFile);
         if (!file.exists()) {
-            // Default settings if not found
             requireUppercase = false;
             requireLowercase = false;
             requireNumbers = false;
@@ -176,57 +150,10 @@ public class PasswordManager {
         }
     }
 
-    private static boolean validatePassword(String password){
-        if(requireUppercase && !password.matches(".*[A-Z].*")){
-            return false;
-        }
-        if(requireLowercase && !password.matches(".*[a-z].*")){
-            return false;
-        }
-        if(requireNumbers && !password.matches(".*[0-9].*")){
-            return false;
-        }
-        if(requireSymbols && !password.matches(".*[!@#$%^&*()].*")){
-            return false;
-        }
-        return true;
-    }
-
-    private static String generateRandomPassword(){
-        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "0123456789";
-        String symbols = "!@#$%^&*()";
-        StringBuilder characterPool = new StringBuilder();
-
-        if (requireUppercase){
-            characterPool.append(upperCase);
-        }
-        if (requireLowercase){
-            characterPool.append(lowerCase);
-        }
-        if (requireNumbers){
-            characterPool.append(numbers);
-        }
-        if (requireSymbols){
-            characterPool.append(symbols);
-        }
-
-        if (characterPool.length() == 0){
-            throw new IllegalArgumentException("At least one character type must be selected.");
-        }
-
-        Random random = new Random();
-        StringBuilder password = new StringBuilder();
-        for (int i = 0; i < 12; i++){
-            password.append(characterPool.charAt(random.nextInt(characterPool.length())));
-        }
-        return password.toString();
-    }
-
-    private static void saveToFile(String website, String username, String password){
+    //Saves a password entry to the user's password file, encrypting the password.
+    public static void saveToFile(String website, String username, String password, String currentUserIntials){
         PrintWriter writer = null;
-        String userPasswordFile = "passwords_" + currentUserIntials + ".txt";
+        String userPasswordFile = "passwords/" + currentUserIntials + ".txt";
         try {
             writer = new PrintWriter(new FileOutputStream(userPasswordFile, true));
             writer.println(website + "," + username + "," + SimpleEncrypt.encrypt(password));

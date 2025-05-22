@@ -3,9 +3,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 
 public class PasswordTableFormatter {
-    
+    /*
+     Prints the user's password entries in a formatted table.
+     userInitials is the parameter used as the initials of the user whose passwords to display
+     */
     public static void printPasswordTable(String userInitials){
-        String passwordFile = "passwords_" + userInitials + ".txt";
+        String passwordFile = "passwords/" + userInitials + ".txt";
         File file = new File(passwordFile);
 
         if (!file.exists()) {

@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 
-
+// Handles loading, saving, and managing user accounts for the application.
 public class UserManager {
+
+    // Loads all users from the specified file and returns them as an ArrayList.
     public static ArrayList<User> loadUsers(String filename){
         ArrayList<User> users = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -23,6 +25,7 @@ public class UserManager {
         return users;
     }
 
+    // Displays the user manager menu and handles user choices for managing users.
     public static void printMenu(String loggedInInitials){
         Scanner scnr = new Scanner(System.in);
         ArrayList<User> users = loadUsers("users.txt");
@@ -32,9 +35,9 @@ public class UserManager {
             System.out.println("\n==== User Manager Menu ====");
             System.out.println("====Select one of the following options:=====");
             System.out.println("1. List Users");
-            System.out.println("2. Modify current user");
-            System.out.println("3. Delete current user");
-            System.out.println("4. Exit User Manager");
+            System.out.println("2. Modify Current User");
+            System.out.println("3. Delete Current User");
+            System.out.println("4. Return to Main Menu");
 
             if (!scnr.hasNextInt()) {
                 System.out.println("Invalid input! Please enter a number (1-5).");
@@ -53,7 +56,7 @@ public class UserManager {
                 case 3:
                     deleteCurrentUser(scnr, users, loggedInInitials);
                 case 4:
-                    System.out.println("Exiting...");
+                    System.out.println("Returning...");
                     break;
                 default:
                     System.out.println("Invalid option! Please choose from options 1-4.");
@@ -62,6 +65,7 @@ public class UserManager {
         System.out.println();
     }
 
+    // Prompts the user to add a new user if they choose to do so.
     public static void promptAddUser(Scanner scnr, ArrayList<User> users) {
         System.out.print("Would you like to add a new user? (yes/no): ");
         String response = scnr.nextLine().trim();
@@ -70,6 +74,7 @@ public class UserManager {
         }
     }
 
+    // Adds a new user to the system after validating input and ensuring unique initials.
     public static void addUser(Scanner scnr, ArrayList<User> users){
         String initials;
         while (true) {
@@ -87,8 +92,8 @@ public class UserManager {
                 continue;
             }
             // Check for alphabetical characters only (for the base initials)
-            if (!initials.matches("[a-zA-Z]+")) {
-                System.out.println("Initials must contain only letters (A-Z or a-z). Please try again.");
+            if (!initials.matches("[a-zA-Z]{2}")) {
+                System.out.println("Initials must contain only TWO letters (A-Z or a-z). Please try again.");
                 continue;
             }
 
@@ -118,13 +123,15 @@ public class UserManager {
 
         System.out.println ("Enter your password: ");
         String password = scnr.nextLine();
+        String encryptedPassword = SimpleEncrypt.encrypt(password);
 
-        User newUser = new User(initials, password, fullName);
+        User newUser = new User(initials, encryptedPassword, fullName);
         users.add(newUser);
         newUser.saveToFile("users.txt");
         System.out.println("User added successfully.\n");
     }
 
+    // Lists all users currently loaded in the system.
     public static void listUsers(ArrayList<User> users){
         if(users.isEmpty()){
             System.out.println("No users available.");
@@ -137,6 +144,7 @@ public class UserManager {
         System.out.println();
     }
 
+    // Allows the currently logged-in user to change their password.
     public static void modifyCurrentUser(Scanner scnr, ArrayList<User> users, String loggedInInitials) {
         boolean userFound = false;
         for (User user : users) {
@@ -145,7 +153,8 @@ public class UserManager {
                 System.out.print("Enter new password (or press Enter to keep current): ");
                 String newPassword = scnr.nextLine();
                 if (!newPassword.isEmpty()) {
-                    user.password = newPassword;
+                    // Encrypt the new password before saving
+                    user.password = SimpleEncrypt.encrypt(newPassword);
                 }
                 // Save all users back to file
                 try (PrintWriter wr = new PrintWriter("users.txt")) {
@@ -164,6 +173,7 @@ public class UserManager {
         }
     }
 
+    // Deletes the currently logged-in user from the system and removes their files.
     public static void deleteCurrentUser(Scanner scnr, ArrayList<User> users, String loggedInInitials) {
         boolean userFound = false;
         for (int i = 0; i < users.size(); i++) {
@@ -173,9 +183,9 @@ public class UserManager {
                 String confirm = scnr.nextLine();
                 if (confirm.equalsIgnoreCase("yes") || confirm.equalsIgnoreCase("y")) {
                     users.remove(i);
-                    File pwFile = new File("passwords_" + loggedInInitials + ".txt");
+                    File pwFile = new File("passwords/" + loggedInInitials + ".txt");
                     if (pwFile.exists()) pwFile.delete();
-                    File settingsFile = new File("settings_" + loggedInInitials + ".txt");
+                    File settingsFile = new File("settings/" + loggedInInitials + ".txt");
                     if (settingsFile.exists()) settingsFile.delete();
                     try (PrintWriter writer = new PrintWriter("users.txt")) {
                         for (User u : users) {
